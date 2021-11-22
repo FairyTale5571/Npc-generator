@@ -26,15 +26,15 @@ func goRVExtensionVersion(output *C.char, outputsize C.size_t) {
 //export goRVExtensionArgs
 func goRVExtensionArgs(output *C.char, outputsize C.size_t, input *C.char, argv **C.char, argc C.int) {
 	var offset = unsafe.Sizeof(uintptr(0))
-	var out []string
+	var args []string
 	for index := C.int(0); index < argc; index++ {
-		out = append(out, C.GoString(*argv))
+		args = append(args, C.GoString(*argv))
 		argv = (**C.char)(unsafe.Pointer(uintptr(unsafe.Pointer(argv)) + offset))
 	}
-	temp := fmt.Sprintf("Function: %s nb params: %d params: %s!", C.GoString(input), argc, out)
+	funcName := C.GoString(input)
 
 	// Return a result to Arma
-	result := C.CString(temp)
+	result := C.CString(ArgsHandle(funcName, args))
 	defer C.free(unsafe.Pointer(result))
 	var size = C.strlen(result) + 1
 	if size > outputsize {
